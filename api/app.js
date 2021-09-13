@@ -23,7 +23,7 @@ if (cluster.isMaster){
             database: 'schools',
             host: 'localhost',
             user: 'root',
-            password: ''
+            password: 'root'
         })
 
         return con
