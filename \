@@ -1,0 +1,438 @@
+var express = require('express')
+var cors    = require('cors')
+var cluster = require('cluster')
+var app = express()
+
+app.use(express.json())
+app.use(cors())
+app.options('*', cors())
+
+
+const port = 8080
+
+if (cluster.isMaster){
+    //Инициализация всей движухи
+    var cpuCount = require('os').cpus().length
+
+    console.log('Cluster master is starting.\nCore count: '+cpuCount)
+    
+    for(let i = 0; i < cpuCount; i++){ //Создание потоков 
+        cluster.fork()
+    }
+
+    cluster.on('exit', (worker)=>{
+        console.log(`Worker ${worker.id} died...\nCreating new worker...`)
+   
+        cluster.fork()
+    })    
+
+} else {
+
+
+    function connect_to_database(){
+        var mysql = require('mysql')
+
+        var con = mysql.createConnection({
+            database: 'schools',
+            host: 'localhost',
+            user: 'root',
+            password: 'root'
+        })
+
+        return con
+    }
+    
+    function random_number(a, b){
+        return Math.round(Math.random()*(b-a)+a)
+    }
+    
+    async function check_if_token_expired(token){
+        var con = connect_to_database()
+        con.connect((err) => {
+            if (err) {
+                throw err
+            }
+                
+            sql = "SELECT * FROM students WHERE token = ? LIMIT 1"
+            result = con.query(sql, [token], (err, result) => {
+                if (err) {
+                    throw err
+                }
+                if (result.length == 0){
+                    console.log('Faied to find user')
+                    result = true 
+                    return 
+                }
+
+                exipre_date_sql = result[0].expires 
+                var edt = exipre_date_sql
+                expire_date_js = new Date(edt)
+                console.log('test')
+                console.log(edt)
+                console.log(expire_date_js)
+                let d = new Date()
+                let date_now = new Date(
+                    d.getFullYear(),
+                    d.getMonth(),
+                    d.getDay(),
+                    d.getHours(),
+                    d.getSeconds(),
+                    d.getMilliseconds
+                )
+                console.log(date_now.toString() < expire_date_js.toString())
+                console.log(date_now.toString() > expire_date_js.toString())
+                if (date_now.toString() < expire_date_js.toString()){
+                    console.log('token is not expired')
+                    result = false
+                } else {
+                    result = true
+                }
+
+                return result
+            })
+            return result
+        })
+    }
+
+    app.get('/get_all_schools', (req, res) => {
+        console.log(`cluster ${cluster.worker.id} responding to request`);
+        
+        con = connect_to_database()
+        con.connect((err)=>{
+            if (err) throw err;
+            console.log(`Cluster ${cluster.worker.id} connected to database`)
+            sql = 'SELECT * FROM `main`';
+            con.query(sql, (err, result) => {
+                if (err) throw err;
+                
+                res.send(result)
+            })
+        })
+    })
+
+
+    app.get('/get_inactive_school', (req, res) => {
+        con = connect_to_database()
+        con.connect((err)=>{
+            if (err) throw err;
+            sql = 'SELECT * FROM `main` WHERE `main`.`isActive` = 0 LIMIT 1';
+            con.query(sql, (err, result) => {
+                if (err) throw err;
+                
+                res.send(result)
+            })
+        })
+    })
+
+
+    app.get('/activate_school/:id', (req, res) =>{
+        const id = req.params.id 
+
+        con = connect_to_database()
+        con.connect((err) => {
+            if (err) throw err;
+            sql = "UPDATE `main` SET `main`.`isActive` = 1 WHERE `main`.`id` = "+id
+            con.query(sql, (err, result) => {
+                if (err) throw err;
+                res.send(result)
+            })
+        })
+    })
+
+    //Получает все муниципалитеты 
+    app.get('/get_all_mo', (req, res) => {
+        con = connect_to_database()
+        con.connect((err)=>{
+            if (err) throw err;
+            sql = "SELECT * FROM `munipals`"
+            con.query(sql, (err, result) => {
+                if (err) throw err;
+                res.send(result)
+            })
+        })
+    })
+
+
+    //Получает все школы данного муниципалитета 
+    app.get('/get_mo_schools/:mo_id', (req, res) => {
+
+        con = connect_to_database()
+        con.connect((err) => {
+            if (err) throw err;
+            mo = req.params.mo_id
+            sql = "SELECT id, name_full, name_short, type FROM `main` WHERE mo = '"+mo+"'"
+
+            con.query(sql, (err, result) =>{
+                if (err) throw err;
+                res.status(200).send(result)
+            })
+        })  
+    })
+
+    app.get('/:school_id/classes', (req, res) => {
+        const school_id = req.params.school_id
+        con = connect_to_database()
+
+        con.connect((err) => {
+            if (err) throw err;
+            sql = "SELECT * FROM `classes` WHERE `classes`.`sid` = '"+school_id+"'"
+
+            con.query(sql, (err, result) => {
+                if (err) throw err;
+                res.status(200).send(result)
+            })
+        })
+    })
+
+
+    app.get('/:school_id/:class_id/students', (req, res) => {
+        const school_id = req.params.school_id
+        const class_id  = req.params.class_id
+        con = connect_to_database()
+
+        con.connect((err) => {
+            if (err) throw err;
+            sql = "SELECT * FROM `students` WHERE `students`.`sid` = '"+school_id+"' AND `students`.`cid`='"+class_id+"' " 
+
+            con.query(sql, (err, result) => {
+                if (err) throw err;
+                res.status(200).send(result)
+            })
+        })
+    })
+
+    //Аунтефикация ученика 
+    app.get('/:school_id/:class_id/:student_id/auth', (req, res) => {
+        const school_id  = req.params.school_id
+        const class_id   = req.params.class_id
+        const student_id = req.params.student_id
+
+        con = connect_to_database()
+        con.connect((err) => {
+            if (err) throw err;
+            sql = "SELECT * FROM students WHERE sid = ? AND cid = ? AND id = ?"
+            
+            con.query(sql, [school_id, class_id, student_id], (err, result) => {
+                if (err) throw err;
+                if (result.token == null && result.expires == null){
+                    console.log('User has not logged in')
+                } else {
+                    console.log('User is already logged in, resetting token')
+                }
+                
+                let d = new Date()
+                let expiration_date = new Date(
+                    d.getFullYear(),
+                    d.getMonth(),
+                    d.getDay(),
+                    (d.getHours()+12),
+                    d.getSeconds(),
+                    d.getMilliseconds()
+                )
+                let mySqlTimestamp = expiration_date.toISOString().slice(0, 19).replace('T', ' ')
+                let newAccessToken = 
+                    d.getMilliseconds() 
+                    + Math.random().toString(36).substr(2, 20) 
+                    + Math.random().toString(36).substr(2, 20)
+                
+                console.log(expiration_date, mySqlTimestamp, newAccessToken)
+
+                sql = "UPDATE students SET token = ?, expires = ? WHERE sid = ? AND cid = ? AND id = ?"
+                con.query(sql, [newAccessToken, mySqlTimestamp, school_id, class_id, student_id], (err, result) => {
+                    if (err) {
+                        res.status(500).send({error: "Неудалось выполнить вход"})
+                        throw err
+                    } 
+                    
+                    res.status(200).send({token: newAccessToken, exp_date: expiration_date})
+                })  
+
+            })
+        })
+    }) 
+
+
+    //Последующие три требуют токена аунтефикации для действий 
+    app.post('/:school_id/:class_id/:student_id/logout', (req, res) => {
+        if (!req.body.token) {
+            res.status(403).send({error: "Необходимо поле token"})
+            return
+        }
+
+        const token      = req.body.token
+        const school_id  = req.params.school_id
+        const class_id   = req.params.class_id
+        const student_id = req.params.student_id
+        
+        console.log(`User ${student_id} attempts logout`)
+       
+        con = connect_to_database()
+        con.connect((err) => {
+            if (err) throw err;
+
+            //Проверяем есть ли этот токен 
+            sql = "SELECT * FROM `students` WHERE token=? LIMIT 1"
+            con.query(sql, [token], (err, result) => {
+                if (err) throw err;
+                
+                if (result.length == 0) {
+                    res.status(301).send({message: "nothing found"})
+                    return 
+                } 
+
+                sql = "UPDATE students SET token = null, expires = null WHERE id = ? AND token = ? "
+                con.query(sql, [student_id, token], (err, result) => {
+                    if (err) {
+                        res.status(500).send({error: "error"})
+                        return 
+                    }
+
+                    if (result){
+                        res.status(200).send({success: true})
+                        return 
+                    }
+                })
+            })
+        })
+    })
+
+
+    app.post('/:school_id/:class_id/:student_id/get_avaliable_tests', (req, res) => {
+        if (!req.body.token) {
+                res.status(403).send({error: "Необходимо поле token"})
+                return
+            }
+
+        const token      = req.body.token
+        const school_id  = req.params.school_id
+        const class_id   = req.params.class_id
+        const student_id = req.params.student_id
+     
+        con = connect_to_database()
+        con.connect((err) => {
+            if (err) throw err;
+            sql = "SELECT * FROM students WHERE id = ? AND token = ? LIMIT 1"
+            con.query(sql, [student_id, token], (err, result) => {
+                if (err) throw err;
+
+                if (result.len == 0) { 
+                    res.status(403).send({error: "user is not authorised"})
+                    return 
+                }
+                
+                sql = "SELECT * FROM classes WHERE id = ? LIMIT 1"
+                con.query(sql, [class_id], (err, result) => {
+                    if (err) throw err;
+                    if (result.length == 0){
+                        res.status(500).send({error: "class not found"})
+                        return 
+                    }
+
+                    student_class_year = result[0].year
+                    sql = "SELECT * FROM modules WHERE isActive = 1 AND targeted_class = ?"
+                    console.log(`Selecting modules for student ${student_id} in class ${class_id} year ${student_class_year}`)
+                    con.query(sql, [student_class_year], (err, result) => { 
+                        if (err) throw err;
+                        res.status(200).send(result)
+                    })
+                })
+            })
+        })
+    })      
+
+    app.post('/:school_id/:class_id/:student_id/start_test/:test_id', (req, res) => {
+        if (!req.body.token) {
+            res.status(403).send({error:'Необходимо поле token'})
+            return 
+        }
+ 
+        const token      = req.body.token
+        const school_id  = req.params.school_id
+        const class_id   = req.params.class_id
+        const student_id = req.params.student_id
+        const test_id    = req.params.test_id
+
+        con = connect_to_database()
+        con.connect((err) => {
+            if (err) throw err;
+            sql = "SELECT * FROM modules WHERE id = ?"
+            con.query(sql, [test_id], (err, result) => {
+                if (err) throw err;
+                if(result.length == 0){
+                    res.status(500).send({error:"Could not find module"})
+                }
+                module = result[0]
+                sql = "SELECT * FROM modules_questions WHERE mid = ? ORDER BY q_num ASC"
+                con.query(sql, [test_id], (err, result) => {
+                    if (err) throw err;
+                    if (result.length == 0){
+                        res.send(500).send({error: "Could not find questions"})
+                        return 
+                    }
+                    
+                    num_questions = 0
+                    //К каждому вопросу создать объкт, содержащий варианты данного вопроса 
+                    current_qustion = 1
+                    questions = []
+                    tmp_questions = []
+
+                    /*
+                     *  Составляем массив сгруппированных по вариантам вопросов 
+                     * */
+                    for (question of result) { //Проходимся по все вопросам 
+                        if (question.q_num > num_questions){
+                            num_questions = question.q_num
+                        }
+                        if (current_qustion == question.q_num){
+                            tmp_questions.push(question)
+                        } else {
+                            questions.push(tmp_questions)
+                            tmp_questions = []
+                            current_qustion = question.q_num
+                            tmp_questions.push(question)
+                        }
+                    }
+                    
+                    finilized_questions = [] //подготовка финального массива для отправки
+                    for (question of questions){
+                        if (question.len == 1){
+                            qtmp = question[0]
+                        } else {
+                            qtmp = question[random_number(0, question.length-1)]
+                        }
+
+                        finilized_questions.push({
+                            number:  qtmp.q_num,
+                            variant: qtmp.q_variant,
+                            text:    qtmp.q_text,
+                            image:   qtmp.q_image,
+                            answ1:   qtmp.answ1,
+                            answ2:   qtmp.answ2,
+                            answ3:   qtmp.answ3,
+                            answ4:   qtmp.answ4
+                        })
+                    }
+
+                    let j, i
+                    for(i = finilized_questions.length-1; i>0; i--){
+                        j = Math.floor(Math.random() * (i+1))
+                        [finilized_questions[i], finilized_questions[j]] = [finilized_questions[j], finilized_questions[i]]
+                    }
+
+                    res.status(200).send({header: module, questions: finilized_questions})
+                })
+            })
+                
+        })    
+    
+    })
+
+
+    app.post('/:school_id/:class_id/:student_id/end_test/', (req, res) => {
+        console.log(req.body)
+    })
+    
+
+    app.listen(port)
+    console.log(`New cluster fork (${cluster.worker.id}) is listening on port ${port}`)
+}
