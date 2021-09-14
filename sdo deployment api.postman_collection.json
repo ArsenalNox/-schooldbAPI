@@ -1,0 +1,100 @@
+{
+	"info": {
+		"_postman_id": "e17d0644-5ec0-4703-b233-78326da8f7ea",
+		"name": "sdo deployment api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "get all mo",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/get_all_mo",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"get_all_mo"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get mo schools",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"mo\": \"г.Бугуруслан\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/get_mo_schools",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"get_mo_schools"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get school classes",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/4/classes",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"4",
+						"classes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get class students",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/4/1/students",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"4",
+						"1",
+						"students"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
