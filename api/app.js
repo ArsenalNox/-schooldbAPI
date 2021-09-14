@@ -369,7 +369,7 @@ if (cluster.isMaster){
         con = connect_to_database()
         con.connect((err) => {
             if (err) throw err;
-            sql = "SELECT * FROM modules WHERE id = ?"
+            sql = "SELECT modules.*, subjects.name as 'sbj' FROM modules LEFT JOIN subjects ON modules.subject=subjects.id WHERE modules.id = ?"
             con.query(sql, [test_id], (err, result) => {
                 if (err) throw err;
                 if(result.length == 0){
