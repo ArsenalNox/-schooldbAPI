@@ -346,7 +346,30 @@ if (cluster.isMaster){
                     console.log(`Selecting modules for student ${student_id} in class ${class_id} year ${student_class_year}`)
                     con.query(sql, [student_class_year], (err, result) => { 
                         if (err) throw err;
+                        modules_active = result
+                            
                         res.status(200).send(result)
+                        return 
+
+                        sql = "SELECT DISTINCT(mid) as 'isCompleted' FROM results WHERE student = ?"
+                        con.query(sql, [student_id], (err, result) => {
+                            if (err) throw err;
+                            finilized_modules = []
+                            for (completed of result){
+                                isCompleted = false
+                                for (module of modules_active){
+                                    if (module.id == completed.isCompleted){
+                                        isCompleted = true
+                                        break
+                                    }
+                                }
+                                if (!isCompleted){
+                                    finilized_modules.push(module)
+                                }
+                            }
+                            
+                            res.status(200).send(finilized_modules)
+                        })
                     })
                 })
             })

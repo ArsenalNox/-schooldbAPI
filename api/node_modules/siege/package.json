@@ -1,0 +1,20 @@
+{
+  "author": "Gui Lin",
+  "name": "siege",
+  "description": "http benchmark by nodejs",
+  "version": "0.2.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/kissjs/siege.js.git"
+  },
+  "main": "siege.js",
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {
+    "commander": "*"
+  , "cookiejar": "*"
+  },
+  "devDependencies": {},
+  "optionalDependencies": {}
+}
