@@ -60,7 +60,7 @@ if (cluster.isMaster){
         return Math.round(Math.random()*(b-a)+a)
     }
     
-    async function check_if_token_expired(token){
+    function check_if_token_expired(token){
         var con = connect_to_database()
         con.connect((err) => {
             if (err) {
