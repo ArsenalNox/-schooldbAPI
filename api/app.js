@@ -245,7 +245,6 @@ if (cluster.isMaster){
                 )
                 let mySqlTimestamp = expiration_date.toISOString().slice(0, 19).replace('T', ' ')
                 let newAccessToken = 
-                    d.getMilliseconds() 
                     + Math.random().toString(36).substr(2, 20) 
                     + Math.random().toString(36).substr(2, 20)
                 
@@ -436,6 +435,114 @@ if (cluster.isMaster){
 
 
     app.post('/:school_id/:class_id/:student_id/end_test/', (req, res) => {
+        if (!req.body.header.student_token) {
+            res.status(403).send({error:'Необходимо поле token'})
+            return 
+        }
+        if (!req.body.header.module_id) {
+            res.status(403).send({error:'Необходимо поле module_id'})
+            return
+        }
+
+        const school_id  = req.params.school_id
+        const class_id   = req.params.class_id
+        const student_id = req.params.student_id
+        const token      = req.body.header.student_token
+        const test_id    = req.body.header.module_id
+        const answeres   = req.body.arr
+
+        con = connect_to_database()
+        con.connect((err) => {
+            if (err) throw err;
+
+            sql = "SELECT modules.*, subjects.name as 'sbj' FROM modules LEFT JOIN subjects ON modules.subject=subjects.id WHERE modules.id = ?"
+            con.query(sql, [test_id], (err, result) => {
+                if (err) throw err;
+                if (result.length == 0){
+                    res.status(500).send({error:'could not find module'})
+                    return
+                }
+
+                module_data = result[0]
+                sql = "SELECT modules_questions.*, question_types.id as 'qtp', question_types.name as 'qtn' FROM modules_questions LEFT JOIN question_types ON modules_questions.q_type=question_types.id WHERE modules_questions.mid = ?"
+                con.query(sql, [test_id], (err, result) => {
+                    if (err) throw err;
+                    test_uuid = 'UUID' 
+                    + Math.random().toString(36).substr(2, 20) 
+                    + Math.random().toString(36).substr(2, 20)
+                        
+                    results_to_write = []
+
+
+                    for (answer of answeres){ //Итерируемся через все ответы 
+                        var tmp = {}
+                        tmp.test_uid = test_uuid
+                        tmp.mid      = test_id
+                        tmp.sid      = school_id
+                        tmp.a_given  = answer.answers
+                        answ_g = answer.answers
+
+                        found = false 
+
+                        //Ищем, какому вопросу принадлежит этот ответ 
+                        for (question of result){
+                            if(
+                                (question.q_num == answer.number)
+                                &&
+                                (question.q_variant == answer.variant)
+                            ){
+                                found = true
+                                console.log('нашел')
+                                tmp.qid = question.id
+
+                                if (question.correct_answ == 1){
+                                    a_corr = question.answ1
+                                } else if (question.correct_answ == 2){
+                                    a_corr = question.answ2
+                                } else if (question.correct_answ == 3){
+                                    a_corr = question.answ3
+                                } else if (question.correct_answ == 4){
+                                    a_corr = question.answ4
+                                } //ELSE??????
+
+                                if (answ_g == a_corr){
+                                    tmp.isCorrect = true 
+                                } else {
+                                    tmp.isCorrect = false
+                                }
+                                console.log(a_corr, answ_g)
+                                    
+                                results_to_write.push([
+                                    tmp.test_uid,
+                                    tmp.qid,
+                                    tmp.a_given,
+                                    tmp.isCorrect,
+                                    tmp.mid,
+                                    tmp.sid,
+                                    student_id
+                                ])
+                            }
+                        }
+
+                        if (!found) {
+                            console.log(`У ${student_id} НЕУДАЛОСЬ НАЙТИ ${answer.number}:${answer.variant}`)
+                        }
+                    }
+                    console.log(results_to_write)
+                    sql = "INSERT INTO results(test_uid, qid, a_given, isCorrect, mid, sid, student) VALUES ?"
+                    con.query(sql, [results_to_write], (err, result) => {
+                        if (err) throw err;
+                        if (result) {
+                            res.status(200).send({success: true})
+                            return
+                        } 
+
+                        res.status(500).send({error: 'could not write results'})
+                        return 
+                    })
+                })
+            })
+        })
         console.log(req.body)
     })
     
