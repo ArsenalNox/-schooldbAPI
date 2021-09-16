@@ -44,7 +44,7 @@ if (cluster.isMaster){
     } 
 
     function connect_to_database(){
-        var mysql = require('mysql')
+        var mysql = require('mysql2')
 
         var con = mysql.createConnection({
             database: 'schools',
