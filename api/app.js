@@ -381,22 +381,24 @@ if (cluster.isMaster){
             res.status(403).send({error:'Необходимо поле token'})
             return 
         }
- 
+        
         const token      = req.body.token
         const school_id  = req.params.school_id
         const class_id   = req.params.class_id
         const student_id = req.params.student_id
         const test_id    = req.params.test_id
-
+        
         con = connect_to_database()
         con.connect((err) => {
             if (err) throw err;
             sql = "SELECT modules.*, subjects.name as 'sbj' FROM modules LEFT JOIN subjects ON modules.subject=subjects.id WHERE modules.id = ?"
             con.query(sql, [test_id], (err, result) => {
                 if (err) throw err;
+                
                 if(result.length == 0){
                     res.status(500).send({error:"Could not find module"})
                 }
+    
                 module = result[0]
                 sql = "SELECT * FROM modules_questions WHERE mid = ? ORDER BY q_num ASC"
                 con.query(sql, [test_id], (err, result) => {
@@ -473,6 +475,11 @@ if (cluster.isMaster){
         const token      = req.body.header.student_token
         const test_id    = req.body.header.module_id
         const answeres   = req.body.arr
+        
+        if (answeres.length == 0){
+            res.status(400).send({error:'empty answeres array'})
+            return
+        }
 
         con = connect_to_database()
         con.connect((err) => {
@@ -503,7 +510,11 @@ if (cluster.isMaster){
                         tmp.mid      = test_id
                         tmp.sid      = school_id
                         tmp.a_given  = answer.answers
-                        answ_g = answer.answers
+                        if (answer.answers !== null){
+                            answ_g = answer.answers
+                        } else {
+                            answ_g = ''
+                        }
 
                         found = false 
 
