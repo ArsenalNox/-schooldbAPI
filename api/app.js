@@ -108,7 +108,7 @@ if (cluster.isMaster){
         })
     }
 
-    app.get('/get_all_schools', (req, res) => {
+    app.get('/api/get_all_schools', (req, res) => {
         console.log(`cluster ${cluster.worker.id} responding to request`);
         
         con = connect_to_database()
@@ -125,7 +125,7 @@ if (cluster.isMaster){
     })
 
 
-    app.get('/get_inactive_school', (req, res) => {
+    app.get('/api/get_inactive_school', (req, res) => {
         con = connect_to_database()
         con.connect((err)=>{
             if (err) throw err;
@@ -139,7 +139,7 @@ if (cluster.isMaster){
     })
 
 
-    app.get('/activate_school/:id', (req, res) =>{
+    app.get('/api/activate_school/:id', (req, res) =>{
         const id = req.params.id 
 
         con = connect_to_database()
@@ -154,7 +154,7 @@ if (cluster.isMaster){
     })
 
     //Получает все муниципалитеты 
-    app.get('/get_all_mo', (req, res) => {
+    app.get('/api/get_all_mo', (req, res) => {
         con = connect_to_database()
         con.connect((err)=>{
             if (err) throw err;
@@ -168,7 +168,7 @@ if (cluster.isMaster){
 
 
     //Получает все школы данного муниципалитета 
-    app.get('/get_mo_schools/:mo_id', (req, res) => {
+    app.get('/api/get_mo_schools/:mo_id', (req, res) => {
 
         con = connect_to_database()
         con.connect((err) => {
@@ -183,7 +183,7 @@ if (cluster.isMaster){
         })  
     })
 
-    app.get('/:school_id/classes', (req, res) => {
+    app.get('/api/:school_id/classes', (req, res) => {
         const school_id = req.params.school_id
         con = connect_to_database()
 
@@ -199,7 +199,7 @@ if (cluster.isMaster){
     })
 
 
-    app.get('/:school_id/:class_id/students', (req, res) => {
+    app.get('/api/:school_id/:class_id/students', (req, res) => {
         const school_id = req.params.school_id
         const class_id  = req.params.class_id
         con = connect_to_database()
@@ -216,7 +216,7 @@ if (cluster.isMaster){
     })
 
     //Аунтефикация ученика 
-    app.get('/:school_id/:class_id/:student_id/auth', (req, res) => {
+    app.get('/api/:school_id/:class_id/:student_id/auth', (req, res) => {
         const school_id  = req.params.school_id
         const class_id   = req.params.class_id
         const student_id = req.params.student_id
@@ -266,7 +266,7 @@ if (cluster.isMaster){
 
 
     //Последующие три требуют токена аунтефикации для действий 
-    app.post('/:school_id/:class_id/:student_id/logout', (req, res) => {
+    app.post('/api/:school_id/:class_id/:student_id/logout', (req, res) => {
         if (!req.body.token) {
             res.status(403).send({error: "Необходимо поле token"})
             return
@@ -310,7 +310,7 @@ if (cluster.isMaster){
     })
 
 
-    app.post('/:school_id/:class_id/:student_id/get_avaliable_tests', (req, res) => {
+    app.post('/api/:school_id/:class_id/:student_id/get_avaliable_tests', (req, res) => {
         if (!req.body.token) {
                 res.status(403).send({error: "Необходимо поле token"})
                 return
@@ -376,7 +376,7 @@ if (cluster.isMaster){
         })
     })      
 
-    app.post('/:school_id/:class_id/:student_id/start_test/:test_id', (req, res) => {
+    app.post('/api/:school_id/:class_id/:student_id/start_test/:test_id', (req, res) => {
         if (!req.body.token) {
             res.status(403).send({error:'Необходимо поле token'})
             return 
@@ -459,7 +459,7 @@ if (cluster.isMaster){
     })
 
 
-    app.post('/:school_id/:class_id/:student_id/end_test/', (req, res) => {
+    app.post('/api/:school_id/:class_id/:student_id/end_test/', (req, res) => {
         if (!req.body.header.student_token) {
             res.status(403).send({error:'Необходимо поле token'})
             return 
