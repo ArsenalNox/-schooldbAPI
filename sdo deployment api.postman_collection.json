@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "e17d0644-5ec0-4703-b233-78326da8f7ea",
+		"_postman_id": "ed554b62-b026-4054-b861-755a66f6d10c",
 		"name": "sdo deployment api",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -11,13 +11,12 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/get_all_mo",
-					"protocol": "http",
+					"raw": "{{host_local}}/api/get_all_mo",
 					"host": [
-						"localhost"
+						"{{host_local}}"
 					],
-					"port": "8080",
 					"path": [
+						"api",
 						"get_all_mo"
 					]
 				}
@@ -34,7 +33,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"mo\": \"г.Бугуруслан\"\r\n}",
+					"raw": "",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -42,14 +41,14 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/get_mo_schools",
-					"protocol": "http",
+					"raw": "{{host_local}}/api/get_mo_schools/5",
 					"host": [
-						"localhost"
+						"{{host_local}}"
 					],
-					"port": "8080",
 					"path": [
-						"get_mo_schools"
+						"api",
+						"get_mo_schools",
+						"5"
 					]
 				}
 			},
@@ -61,14 +60,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/4/classes",
-					"protocol": "http",
+					"raw": "{{host_local}}/api/525/classes",
 					"host": [
-						"localhost"
+						"{{host_local}}"
 					],
-					"port": "8080",
 					"path": [
-						"4",
+						"api",
+						"525",
 						"classes"
 					]
 				}
@@ -81,20 +79,195 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/4/1/students",
-					"protocol": "http",
+					"raw": "{{host_local}}/api/525/25679/students",
 					"host": [
-						"localhost"
+						"{{host_local}}"
 					],
-					"port": "8080",
 					"path": [
-						"4",
-						"1",
+						"api",
+						"525",
+						"25679",
 						"students"
 					]
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "student auth",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host_local}}/api/525/25679/898691/auth",
+					"host": [
+						"{{host_local}}"
+					],
+					"path": [
+						"api",
+						"525",
+						"25679",
+						"898691",
+						"auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "send test result",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"header\": { \"module_id\": 1, \"student_token\": \"NaNa1vils0734v\" },\n  \"arr\": [\n    { \"number\": 2, \"variant\": 1, \"answers\": null },\n    { \"number\": 1, \"variant\": 2, \"answers\": null },\n    { \"number\": 3, \"variant\": 1, \"answers\": null }\n  ]\n}\n\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host_local}}/api/1525/25679/898661/end_test",
+					"host": [
+						"{{host_local}}"
+					],
+					"path": [
+						"api",
+						"1525",
+						"25679",
+						"898661",
+						"end_test"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "student deauthorrise",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"token\": \"449ivfw9i2rk7t0auubp3oovw\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host_local}}/api/525/25679/898661/logout",
+					"host": [
+						"{{host_local}}"
+					],
+					"path": [
+						"api",
+						"525",
+						"25679",
+						"898661",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get student's avaliable modules",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"token\": \"NaN97x4cskwrih\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host_local}}/api/525/25679/898667/get_avaliable_tests",
+					"host": [
+						"{{host_local}}"
+					],
+					"path": [
+						"api",
+						"525",
+						"25679",
+						"898667",
+						"get_avaliable_tests"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "start test",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"token\": \"78392xkvqvhuusr43o95om3e\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host_local}}/api/525/25679/898661/start_test/1",
+					"host": [
+						"{{host_local}}"
+					],
+					"path": [
+						"api",
+						"525",
+						"25679",
+						"898661",
+						"start_test",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "host_local",
+			"value": "localhost:8080"
+		},
+		{
+			"key": "host_remote",
+			"value": "192.168.145.114:8080"
+		},
+		{
+			"key": "host_remote_dns",
+			"value": "sdonode.okeit.edu:8080"
 		}
 	]
 }
