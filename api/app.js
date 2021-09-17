@@ -1,6 +1,8 @@
 var express = require('express')
 var cors    = require('cors')
 var cluster = require('cluster')
+const { reset } = require('nodemon')
+const { compileFunction } = require('vm')
 var app = express()
 
 app.use(express.json())
@@ -48,9 +50,10 @@ if (cluster.isMaster){
 
         var con = mysql.createConnection({
             database: 'schools',
-            host: 'localhost',
-            user: 'root',
-            password: 'root'
+            host: '192.168.88.249',
+            user: 'local_user',
+            password: ''
+            
         })
 
         return con
@@ -85,7 +88,7 @@ if (cluster.isMaster){
                 console.log(edt)
                 console.log(expire_date_js)
                 let d = new Date()
-                let date_now = new Date(
+                let date_now = new Date( //TODO: Неправильно генерируется дата (на 7 дней ранее)
                     d.getFullYear(),
                     d.getMonth(),
                     d.getDay(),
@@ -347,15 +350,27 @@ if (cluster.isMaster){
                     con.query(sql, [student_class_year], (err, result) => { 
                         if (err) throw err;
                         modules_active = result
-                                                 //Проверяем, решал ли данный модуль ученик 
 
-                        sql = "SELECT DISTINCT(mid) as 'isCompleted' FROM results WHERE student = ?"
-                        
+                        //Проверяем, решал ли данный модуль ученик 
+                        sql = "SELECT DISTINCT(mid) as 'id' FROM results WHERE student = ?"
+                        con.query(sql, [student_id], (err, result) => {
+                            if (err) throw err;
+                            if (result.length == 0){ //Если ученик вообще не решал модулей 
+                                    res.status(200).send(modules_active)
+                                    return
+                            }
 
-
-                           
-                        res.status(200).send(result)
-                        return 
+                            for(completed of result){
+                                for(module of modules_active){
+                                    if (completed.id == module.id){
+                                        module.isCompleted = true
+                                        break
+                                    }
+                                    module.isCompleted = false 
+                                }
+                            }                            
+                            res.send(modules_active)
+                        })
                     })
                 })
             })
@@ -495,10 +510,11 @@ if (cluster.isMaster){
                         tmp.test_uid = test_uuid
                         tmp.mid      = test_id
                         tmp.sid      = school_id
-                        tmp.a_given  = answer.answers
                         if (answer.answers !== null){
+                            tmp.a_given  = answer.answers
                             answ_g = answer.answers
                         } else {
+                            tmp.a_given  = ''
                             answ_g = ''
                         }
 
