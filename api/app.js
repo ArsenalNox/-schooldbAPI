@@ -347,29 +347,15 @@ if (cluster.isMaster){
                     con.query(sql, [student_class_year], (err, result) => { 
                         if (err) throw err;
                         modules_active = result
-                            
-                        res.status(200).send(result)
-                        return 
+                                                 //Проверяем, решал ли данный модуль ученик 
 
                         sql = "SELECT DISTINCT(mid) as 'isCompleted' FROM results WHERE student = ?"
-                        con.query(sql, [student_id], (err, result) => {
-                            if (err) throw err;
-                            finilized_modules = []
-                            for (completed of result){
-                                isCompleted = false
-                                for (module of modules_active){
-                                    if (module.id == completed.isCompleted){
-                                        isCompleted = true
-                                        break
-                                    }
-                                }
-                                if (!isCompleted){
-                                    finilized_modules.push(module)
-                                }
-                            }
-                            
-                            res.status(200).send(finilized_modules)
-                        })
+                        
+
+
+                           
+                        res.status(200).send(result)
+                        return 
                     })
                 })
             })
