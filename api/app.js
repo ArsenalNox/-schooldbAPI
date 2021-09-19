@@ -50,8 +50,8 @@ if (cluster.isMaster){
 
         var con = mysql.createConnection({
             database: 'schools',
-            host: '192.168.88.249',
-            user: 'local_user',
+            host: 'localhost',
+            user: 'root',
             password: ''
             
         })
@@ -398,6 +398,7 @@ if (cluster.isMaster){
                 
                 if(result.length == 0){
                     res.status(500).send({error:"Could not find module"})
+                    return
                 }
     
                 module = result[0]

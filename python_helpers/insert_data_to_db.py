@@ -2,7 +2,7 @@
 """
     Данный скрипт вносит в базу данных все школы из таблицы и ничего больше 
 """
-ё
+
 import mysql.connector
 import pandas
 import logging
