@@ -1,8 +1,9 @@
+require('dotenv').config()
+
 var express = require('express')
 var cors    = require('cors')
 var cluster = require('cluster')
-const { reset } = require('nodemon')
-const { compileFunction } = require('vm')
+
 var app = express()
 
 app.use(express.json())
@@ -10,7 +11,7 @@ app.use(cors())
 app.options('*', cors())
 
 
-const port = 8080
+const port = process.env.PORT
 
 if (cluster.isMaster){
     //Инициализация всей движухи
@@ -47,13 +48,18 @@ if (cluster.isMaster){
 
     function connect_to_database(){
         var mysql = require('mysql2')
-
+        console.log(`
+            Logging in with data:
+            USER:     ${process.env.DATABASE_USER}
+            PASSWORD: ${process.env.PASSWORD}
+            DATABASE: ${process.env.DATABASE}
+            HOST:     ${process.env.HOST}
+            `)
         var con = mysql.createConnection({
-            database: 'schools',
-            host: 'localhost',
-            user: 'root',
-            password: ''
-            
+            database: process.env.DATABASE,
+            host:     process.env.HOST,
+            user:     process.env.DATABASE_USER,
+            password: process.env.PASSWORD
         })
 
         return con
