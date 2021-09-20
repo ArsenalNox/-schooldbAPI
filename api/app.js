@@ -10,6 +10,14 @@ app.use(express.json())
 app.use(cors())
 app.options('*', cors())
 
+console.log(`
+   Logging in with data:
+   USER:     ${process.env.DATABASE_USER}
+   PASSWORD: ${process.env.PASSWORD}
+   DATABASE: ${process.env.DATABASE}
+   HOST:     ${process.env.HOST}
+   `)
+
 
 const port = process.env.PORT
 
@@ -48,13 +56,6 @@ if (cluster.isMaster){
 
     function connect_to_database(){
         var mysql = require('mysql2')
-        console.log(`
-            Logging in with data:
-            USER:     ${process.env.DATABASE_USER}
-            PASSWORD: ${process.env.PASSWORD}
-            DATABASE: ${process.env.DATABASE}
-            HOST:     ${process.env.HOST}
-            `)
         var con = mysql.createConnection({
             database: process.env.DATABASE,
             host:     process.env.HOST,
