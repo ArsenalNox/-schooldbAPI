@@ -9,19 +9,18 @@ var app = express()
 app.use(express.json())
 app.use(cors())
 app.options('*', cors())
-
-console.log(`
-   Logging in with data:
-   USER:     ${process.env.DATABASE_USER}
-   PASSWORD: ${process.env.PASSWORD}
-   DATABASE: ${process.env.DATABASE}
-   HOST:     ${process.env.HOST}
-   `)
-
-
 const port = process.env.PORT
 
 if (cluster.isMaster){
+
+    console.log(`
+       Logging in with data:
+       USER:     ${process.env.DATABASE_USER}
+       PASSWORD: ${process.env.PASSWORD}
+       DATABASE: ${process.env.DATABASE}
+       HOST:     ${process.env.HOST}
+       `)
+
     //Инициализация всей движухи
     var cpuCount = require('os').cpus().length
 
