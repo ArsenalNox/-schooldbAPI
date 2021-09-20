@@ -36,9 +36,9 @@ def generate_student_list():
 
 
 sqlCon = mysql.connector.connect(
-        user='root',
-        host='localhost',
-        password='root',
+        user='vlad',
+        host='192.168.145.114',
+        password='P@ssw0rd',
         database='schools'
         )
 
