@@ -3,7 +3,11 @@ import mysql.connector
 
 
 def generate_class_list():
-    letters = ['а','б','в','г','д','е','ж']
+    letters = ['а','б','в','г','д','е','ж',
+               'з','и','й','к','л','м',
+               'о','п','р','с','т','у','ф',
+               'х','ц','ч','ш','э','ю','я',
+                ]
     list_classes = []
 
     for i in range(5,12,1):
@@ -13,7 +17,7 @@ def generate_class_list():
 
 
 def generate_student_list():
-    student_count = 35
+    student_count = 40
     list_students = []
     name = 0
     last = 0 
