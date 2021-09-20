@@ -2,6 +2,8 @@ import pandas
 import pprint
 import mysql.connector
 
+add_only_first_variant = True
+
 pp = pprint.PrettyPrinter(indent=4, sort_dicts=False)
 
 df = pandas.read_excel('tests_data/matan.xlsx', header=None)
@@ -17,9 +19,9 @@ if test_target_class < 5:
     test_target_class = 5
 
 sqlConnection = mysql.connector.connect(
-    host='192.168.145.114',
-    user='vlad',
-    password='P@ssw0rd',
+    host='localhost',
+    user='root',
+    password='',
     database='schools'
 )
 cursor = sqlConnection.cursor()
@@ -140,6 +142,8 @@ for task in test:
         print(values)
         cursor.execute(sql, values)
         print(question['text'])
+        if add_only_first_variant:
+            break
 
         variant += 1
 
