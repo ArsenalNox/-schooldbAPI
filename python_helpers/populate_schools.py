@@ -43,7 +43,7 @@ sqlCon = mysql.connector.connect(
         )
 
 cursor = sqlCon.cursor()
-sql = "SELECT * FROM main"
+sql = "SELECT * FROM main WHERE id = 2112"
 
 cursor.execute(sql)
 result = cursor.fetchall()

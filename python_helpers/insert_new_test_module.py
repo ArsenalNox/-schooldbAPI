@@ -2,7 +2,7 @@ import pandas
 import pprint
 import mysql.connector
 
-add_only_first_variant = True
+add_only_first_variant = False
 
 pp = pprint.PrettyPrinter(indent=4, sort_dicts=False)
 
@@ -19,9 +19,9 @@ if test_target_class < 5:
     test_target_class = 5
 
 sqlConnection = mysql.connector.connect(
-    host='localhost',
-    user='root',
-    password='',
+    host='192.168.145.114',
+    user='vlad',
+    password='P@ssw0rd',
     database='schools'
 )
 cursor = sqlConnection.cursor()
@@ -48,7 +48,6 @@ for columns in df:
 
         #Проверяем, есть ли уже этот тип вопроса в бд
         isNull = False
-        print(question['q_type'])
         if pandas.isna(question['q_type']):
             question['q_type'] = '1'
         if pandas.isna(question['q_subtype']):
