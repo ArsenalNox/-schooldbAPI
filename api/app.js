@@ -365,9 +365,13 @@ if (cluster.isMaster){
                                     res.status(200).send(modules_active)
                                     return
                             }
-
+			    //В проверке ошибка, если на страница 2 и больше тестов то первый пройденный считается как не пройденный
                             for(completed of result){
                                 for(module of modules_active){
+				    if (module.isCompleted == true){
+					continue;
+				    }	
+
                                     if (completed.id == module.id){
                                         module.isCompleted = true
                                         break
