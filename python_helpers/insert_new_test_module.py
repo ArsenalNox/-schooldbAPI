@@ -6,7 +6,7 @@ add_only_first_variant = False
 
 pp = pprint.PrettyPrinter(indent=4, sort_dicts=False)
 
-df = pandas.read_excel('tests_data/matan.xlsx', header=None)
+df = pandas.read_excel('tests_data/phy11.xlsx', header=None)
 iter = 0
 
 print('Добавляемый модуль после добавления по умолчанию всегда неактивный\n\n')
@@ -96,6 +96,7 @@ mid = cursor.lastrowid
 for task in test:
     variant = 1
     for question in task['questions']:
+        print('ДОБАВЛЯЮ ВОПРОС')
         #Добавление иднивидуального вопроса 
 
         sql = """INSERT INTO modules_questions(
