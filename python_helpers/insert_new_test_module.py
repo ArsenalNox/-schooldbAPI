@@ -2,11 +2,11 @@ import pandas
 import pprint
 import mysql.connector
 
-add_only_first_variant = False
+add_only_first_variant = True
 
 pp = pprint.PrettyPrinter(indent=4, sort_dicts=False)
 
-df = pandas.read_excel('tests_data/phy11.xlsx', header=None)
+df = pandas.read_excel('tests_data/44.xlsx', header=None)
 iter = 0
 
 print('Добавляемый модуль после добавления по умолчанию всегда неактивный\n\n')

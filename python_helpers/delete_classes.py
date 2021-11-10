@@ -1,5 +1,6 @@
-import re
+#!/usr/bin/env python3
 import mysql.connector
+import pprint
 
 con = mysql.connector.connect(
         host='192.168.145.114',
@@ -10,9 +11,29 @@ con = mysql.connector.connect(
 
 cursor = con.cursor()
 
-sbj = 2
-school_id = 830
-class_name = '9Б'
+"""
+    2 - математика
+    3 - русский 
+    4 - химия
+    5 - физика
+    6 - биология
+"""
+
+sbj = 6
+school_id = 1587
+class_name = '11А'
+
+cursor.execute(f'SELECT * FROM main WHERE id = {school_id}')
+result = cursor.fetchone()
+print(f'Deleting from school {result[1]}')
+input('Press any button...')
+
+students_to_delete = [
+        '17',
+        ]
+
+print(f'Amount of students to delete: {len(students_to_delete)}')
+print(students_to_delete)
 
 #Выбирает результаты конкретного класса школы 
 sql1 = """
@@ -94,11 +115,10 @@ type_d = 1
 
 active_sql = sql3
 
-if type_d == 1:
-    students_to_delete = [
-            '03',
-            ]
+will_be_deleted = {}
 
+
+if type_d == 1:
     student_ids = []
 
     print(active_sql)
@@ -109,9 +129,16 @@ if type_d == 1:
         student_name = str(row[5])+str(row[6])
         if row[7] == class_name:
         #if '9' in row[7]:
+
             print(row)
             if (student_name in students_to_delete) and not (student_name in student_ids):
                 student_ids.append(row[2])
+
+            if row[7] not in will_be_deleted:
+                will_be_deleted[row[7]] = []
+
+            if student_name not in will_be_deleted[row[7]]:
+                will_be_deleted[row[7]].append(student_name)
 
             sql = 'DELETE FROM results WHERE id = {}'.format(row[0])
             print(sql)
@@ -130,5 +157,11 @@ else:
         cursor.execute(sql)
 
 
-con.commit()
-print('done')
+pprint.pprint(will_be_deleted)
+next_action = input('Удалить?')
+
+if next_action == 'y':
+    con.commit()
+    pass
+else:
+    print('Отмена удаления')

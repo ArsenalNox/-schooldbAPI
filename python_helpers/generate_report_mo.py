@@ -21,7 +21,7 @@ def main():
     Usage: 
     [mo_id]: generate info table for munipal
     -l:      get list of all munipals
-    -a:      get 
+    -a:      get all munipals 
             """)
         return 
 
@@ -88,6 +88,7 @@ def main():
         workSheet.write(working_row, 2, f'{result[0]}')
         workSheet.write(working_row, 3, f'{result2[0]}')
         workSheet.write(working_row+1, 0, 'Школы')
+        workSheet.set_row(working_row+1, 0, None, {'level': 1})
         working_row += 2 
         
         #Проведение выборки по всем школам данного муниципалитета 
