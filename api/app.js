@@ -12,7 +12,6 @@ app.options('*', cors())
 const port = process.env.PORT
 
 if (cluster.isMaster){
-
     console.log(`
        Logging in with data:
        USER:     ${process.env.DATABASE_USER}
@@ -351,32 +350,44 @@ if (cluster.isMaster){
                     }
 
                     student_class_year = result[0].year
-                    sql = "SELECT modules.*, subjects.name as 'sbj' FROM modules LEFT JOIN subjects ON modules.subject=subjects.id WHERE isActive = 1 AND targeted_class = ?"
                     console.log(`Selecting modules for student ${student_id} in class ${class_id} year ${student_class_year}`)
+
+                    sql = "SELECT modules.*, subjects.name as 'sbj' FROM modules LEFT JOIN subjects ON modules.subject=subjects.id WHERE isActive = 1 AND targeted_class = ?"
+
                     con.query(sql, [student_class_year], (err, result) => { 
+
                         if (err) throw err;
                         modules_active = result
 
                         //Проверяем, решал ли данный модуль ученик 
-                        sql = "SELECT DISTINCT(mid) as 'id' FROM results WHERE student = ?"
+                        sql = "SELECT mid as 'id' FROM results WHERE student = ? GROUP BY test_uid"
                         con.query(sql, [student_id], (err, result) => {
                             if (err) throw err;
                             if (result.length == 0){ //Если ученик вообще не решал модулей 
                                     res.status(200).send(modules_active)
                                     return
                             }
-			    //В проверке ошибка, если на страница 2 и больше тестов то первый пройденный считается как не пройденный
+                            console.log(result)
                             for(completed of result){
                                 for(module of modules_active){
-				    if (module.isCompleted == true){
-					continue;
-				    }	
+                                        
+                                    if (module.isCompleted == true || completed.id == module.id){
+                                        module.completedCount = module.completedCount + 1 || 1
+                                        console.log(module.completedCount)
+                                    }
+
+                                    if (module.isCompleted == true){
+                                        module.isCompleted = true
+                                    }	
 
                                     if (completed.id == module.id){
                                         module.isCompleted = true
-                                        break
                                     }
-                                    module.isCompleted = false 
+
+                                    if (!module.isCompleted){
+                                        module.isCompleted = false  
+                                    }
+
                                 }
                             }                            
                             res.send(modules_active)
@@ -515,6 +526,7 @@ if (cluster.isMaster){
                         
                     results_to_write = []
 
+                    res_to_send = []
 
                     for (answer of answeres){ //Итерируемся через все ответы 
                         var tmp = {}
@@ -568,6 +580,15 @@ if (cluster.isMaster){
                                     tmp.sid,
                                     student_id
                                 ])
+                                
+                                res_to_send.push({
+                                    "isCorrect":      tmp.isCorrect,
+                                    "answerGiven":    tmp.a_given,
+                                    "answerCorrect":  a_corr ,
+                                    "number":         answer.number,
+                                    "variant":        answer.variant
+                                })
+
                             }
                         }
 
@@ -575,12 +596,15 @@ if (cluster.isMaster){
                             console.log(`У ${student_id} НЕУДАЛОСЬ НАЙТИ ${answer.number}:${answer.variant}`)
                         }
                     }
+
                     console.log(results_to_write)
+
                     sql = "INSERT INTO results(test_uid, qid, a_given, isCorrect, mid, sid, student) VALUES ?"
                     con.query(sql, [results_to_write], (err, result) => {
                         if (err) throw err;
                         if (result) {
-                            res.status(200).send({success: true})
+
+                            res.status(200).send({res: res_to_send, success: true})
                             return
                         } 
 
@@ -593,6 +617,10 @@ if (cluster.isMaster){
         console.log(req.body)
     })
     
+    app.post('/api/:school_id/:class_id/:student_id/get_completed_count/', (req, res) => {
+
+    })
+        
 
     app.listen(port)
     console.log(`New cluster fork (${cluster.worker.id}) is listening on port ${port}`)
